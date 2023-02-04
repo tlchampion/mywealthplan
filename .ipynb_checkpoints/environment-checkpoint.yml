@@ -1,0 +1,19 @@
+name: dev
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - anaconda
+  - nodejs
+  - fire
+  - questionary
+  - jupyter_contrib_nbextensions
+  - jupyterlab-git
+  - jupyterlab-system-monitor
+  - python-dotenv
+  - hvplot
+  - geoviews
+  - watermark
+  - panel
+  - pyviz_comms
+prefix: /Users/thomas/opt/anaconda3/envs/dev
