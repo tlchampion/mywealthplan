@@ -1,15 +1,15 @@
 
 
 
-
 import panel as pn
 pn.extension(template='bootstrap')
 import pandas as pd
 import hvplot.pandas
-from panel.template import BootstrapTemplate
+from panel.template import BootstrapTemplate, ReactTemplate
+from panel.template.theme import DarkTheme
+from pathlib import Path
 
-bootstrap = pn.template.BootstrapTemplate(title="Portfolio Analysis")
-
+bootstrap = pn.template.BootstrapTemplate(title="Portfolio Analysis", header_background = 'blue')
 
 
 
@@ -164,13 +164,13 @@ bootstrap.sidebar.append(pn.Row(pn.Column(header_box,
 
 
 
-
-
-
 def get_values():
     return q1.value, q2.value, q3.value, q4.value, q5.value, q6.value
-    
 
+def get_stocks():
+    return pd.read_csv(Path("./stocks.csv"), index_col='Date', parse_dates=True, infer_datetime_format=True)
+def get_weights():
+    return [0.30,0.20,0.40,0.10]
 
 
 
@@ -178,6 +178,9 @@ def get_values():
 @pn.depends(button.param.clicks)
 def main_display(_):
     a,b,c,d,e,f = get_values()
+    
+    stocks = get_stocks()
+    weights = get_weights()
     
     def image(a,b,c,d,e,f):
         q1_points = q1_dict[a]
@@ -218,18 +221,80 @@ def main_display(_):
         return f"You scored {score} out of 40, indicating that you are a {risk} investor"
     
     text=textblock(a,b,c,d,e,f)
+    
+    
+    html_pane = pn.pane.HTML("""
+    <h1>This is an HTML pane</h1>
+    
+    <br>
+    {}
+
+      
+
+    <br>
+    <h2>We can include a diagram (pie chart) showing portfolio breakdown.
+    <br>
+    i.e. x% fixed income, y% international equity/stocks, z% US equity/stocks, w% crytpo/etc <h2>
+
+    """.format(text), style={'background-color': '#F6F6F6', 'border': '2px solid black',
+                'border-radius': '5px', 'padding': '10px'},sizing_mode='stretch_width')
+    
     static = pn.Column(pn.pane.markup.Markdown("# Instructions"),
     pn.pane.markup.Markdown("## Put some instructions here like:"),
     pn.pane.markup.Markdown("* What do you do?\n* What will you see?\n* What's next?"), sizing_mode='stretch_width')
  
- 
+    jpg_pane = pn.pane.JPG('https://www.gstatic.com/webp/gallery/4.sm.jpg', width=500)
+    second_button = pn.widgets.Button(name='Click me!')
+    
+    
+    textb = pn.widgets.TextInput(value="ready")
+    async def button2(event):
+        if (second_button.clicks % 2) != 0:
+            jpg_pane.object = "image1.jpg"
+        else:
+            jpg_pane.object = 'https://www.gstatic.com/webp/gallery/4.sm.jpg'
+        textb.value = "Clicked {0} times".format(second_button.clicks)
+
+
+        
+    second_button.on_click(button2)
+    
+    investment_amount = pn.widgets.Spinner(name="Investment value in $", value=5000, step=500, start=1000, end=100000)
+    
+    def make_chart(investment):
+        weight = weights
+        allocation = [w * investment for w in weight]
+        amount = allocation/stocks.iloc[0]
+        stock_value = stocks * amount
+        stock_value = stock_value.sum(axis=1).reset_index().rename(columns={0:"Total Value ($)"})
+        plot = stock_value.hvplot.line(x="Date", height=500,width=1000)
+        return plot
+    
+    def find_value(investment):
+        weight = weights
+        allocation = [w * investment for w in weight]
+        amount = allocation/stocks.iloc[0]
+        stock_value = stocks * amount
+        stock_value = stock_value.sum(axis=1).reset_index().rename(columns={0:"Total Value ($)"})
+        value = round(stock_value['Total Value ($)'].iloc[-1],2)
+        return value
+
+    
+    chart = pn.bind(make_chart,investment_amount)
+    value = pn.bind(find_value,investment_amount)
+    cur_date = stocks.reset_index()['Date'].iloc[-1].strftime('%B %d, %Y')
+    value_text = f"had you invested {investment_amount.value} you're portfolio would be worth {value} as of {cur_date}"
+    
+
         
     return pn.Tabs(("Tab 0", static),
                    ("Tab 1", pn.Column("This tab can hold a variety of plots or details about the portfolio selected",image(a,b,c,d,e,f))),
-                   ("Tab 2", pn.Column("This tab can hold even more plots or details!!", pn.pane.markup.Markdown(text))))
+                   ("Tab 2", pn.Row(pn.Column("This tab can hold even more plots or details!!", pn.pane.markup.Markdown(text)),html_pane)),
+                   ("Tab 3", pn.Row(pn.Column(jpg_pane,second_button,textb ),"Who Knows?")),
+                   ("Tab 4", pn.Column(pn.Row(investment_amount),chart,sizing_mode="stretch_width"))
+                  )
  
    
-    
 
 
 
@@ -242,7 +307,6 @@ bootstrap.main.append(main_display)
 
 
 bootstrap.show()
-
 
 
 
