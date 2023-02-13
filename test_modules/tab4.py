@@ -16,7 +16,7 @@ def make_chart(investment, weights, stocks):
 #     stock_value = stock_value.sum(axis=1).reset_index().rename(columns={0:"Total Value ($)"})
 #     plot = stock_value.hvplot.line(x="Date", height=500,width=1000)
 #     return plot
-
+    
     weights = weights['weight']
     allocation = [w * investment for w in weights]
     amount = allocation/stocks.iloc[0]

@@ -84,8 +84,8 @@ def get_html():
 """
     return text
 
-def make_weight_chart(weights):
-    
+def make_weight_chart(weight):
+    weights = weight.copy()
     weights['Percent Allocation'] = weights['weight'] * 100
     weights = weights.drop('weight', axis=1)
     return weights

@@ -6,6 +6,8 @@ import json
 import pandas as pd
 from dotenv import load_dotenv
 import alpaca_trade_api as tradeapi
+import datetime
+from yahoo_fin.stock_info import get_data
 
 
 
@@ -54,12 +56,19 @@ answers_dict = {
 }
 
 
-conservative = {'MSFT': 0.4, 'AAPL': .2, 'GOOG': 0.4}
-mod_conservative = {'MSFT': .2, 'IBM': .5, 'AMZN': .3}
-moderate = {'IBM': 0.4, 'AAPL': 0.5, 'GOOG': 0.1}
-mod_aggressive = {"MSFT": 0.3, "CSCO": 0.3, "IMB": 0.4}
-aggressive = {"CSCO": 0.2, "AAPL": 0.5, "GOOG": 0.3}
-            
+# define dictionary containg portfolio descriptions
+
+port_descr = {"conservative": "This portfolio has a low-risk, low-reward strategy, with the majority of investments being in bonds (60%) and a smaller portion in stocks (20%). It also includes a small allocation to cryptos (10%) and commodities (10%) to add some diversity. This portfolio is suitable for individuals who are risk-averse and prioritize stability over potential higher returns.",
+ "balanced": "This portfolio strikes a balance between risk and reward with equal allocations to stocks (40%) and bonds (40%). It also includes a small allocation to cryptos (10%) and commodities (10%) for diversity. This portfolio is suitable for individuals who are looking for a moderate level of risk and a moderate level of returns.",
+ "growth": "This portfolio has a high-risk, high-reward strategy, with the majority of investments being in stocks (60%) and a smaller portion in bonds (20%). It also includes a small allocation to cryptos (10%) and commodities (10%) for diversity. This portfolio is suitable for individuals who have a long-term investment horizon and are willing to take on a higher level of risk in exchange for potential higher returns.",
+ "aggressive": "This portfolio has a very high-risk, very high-reward strategy, with the majority of investments being in stocks (70%) and a small portion in bonds (5%). It also includes a substantial allocation to cryptos (15%) and a small allocation to commodities (10%) for diversity. This portfolio is suitable for individuals who are willing to take on a significant amount of risk in pursuit of potentially high returns and have a long-term investment horizon."}
+
+
+
+conservative = {'^GSPC': [0.20, 'STOCKS'], '^TNX': [0.60, "BONDS"], 'BTC-USD': [0.10, "CRYPTO"], 'BZ=F': [0.10, "COMMODOTIES"]}
+balanced = {'^GSPC': [0.40, 'STOCKS'], '^TNX': [0.40, "BONDS"], 'BTC-USD': [0.10, "CRYPTO"], 'BZ=F': [0.10, "COMMODOTIES"]}
+growth = {'^GSPC': [0.60, 'STOCKS'], '^TNX': [0.20, "BONDS"], 'BTC-USD': [0.10, "CRYPTO"], 'BZ=F': [0.10, "COMMODOTIES"]}
+aggressive = {'^GSPC': [0.70, 'STOCKS'], '^TNX': [0.05, "BONDS"], 'BTC-USD': [0.15, "CRYPTO"], 'BZ=F': [0.10, "COMMODOTIES"]}
      
 
 
@@ -71,70 +80,85 @@ def get_questions():
 def get_answers():
     return answers_dict
 
+
 # functions to load in weights and stocks from saved files
 
 def get_weights(total_score):
     # return [0.30,0.20,0.40,0.10]
     # return pd.read_csv(Path("./weights1.csv"))
     if (total_score < 13):
-        return pd.DataFrame.from_dict(conservative, orient='index', columns=['weight'])
+        return pd.DataFrame.from_dict(conservative, orient='index', columns=['weight', 'category'])
     elif (total_score < 21):
-        return pd.DataFrame.from_dict(mod_conservative, orient='index', columns=['weight'])
+        return pd.DataFrame.from_dict(balanced, orient='index', columns=['weight', 'category'])
     elif (total_score < 29):
-        return pd.DataFrame.from_dict(moderate, orient='index', columns=['weight'])
-    elif (total_score < 35):
-        return pd.DataFrame.from_dict(mod_aggressive, orient='index', columns=['weight'])
+        return pd.DataFrame.from_dict(growth, orient='index', columns=['weight', 'category'])
     else:
-        return pd.DataFrame.from_dict(aggressive, orient='index', columns=['weight'])
+        return pd.DataFrame.from_dict(aggressive, orient='index', columns=['weight', 'category'])
 
     
 
 def get_tickers(total_score):
     if (total_score < 13):
-        return ['MSFT', 'AAPL','GOOG']
+        return list(conservative.keys())
     elif (total_score < 21):
-        return ['MSFT', 'IBM','AMZN']
+        return list(balanced.keys())
     elif (total_score < 29):
-        return ['IBM', 'AAPL','GOOG']
-    elif (total_score < 35):
-        return ['MSFT', 'CSCO','IBM']
+        return list(growth.keys())
     else:
-        return ['CSCO', 'AAPL','GOOG']
+        return list(aggressive.keys())
+    
+    
+# def get_stocks(tickers):
+#     # return pd.read_csv(Path("./stocks.csv"), index_col='Date', parse_dates=True, infer_datetime_format=True)
+#     load_dotenv()
+#     alpaca_api_key = os.getenv("ALPACA_API_KEY")
+#     alpaca_secret_key = os.getenv("ALPACA_SECRET_KEY")
 
-def get_stocks(tickers):
+#     api = tradeapi.REST(
+#         alpaca_api_key,
+#         alpaca_secret_key,
+#         api_version = "v2"
+#     )
+
+#     # Tickers for all assets, timeframe, timezone amd 10 years history
+
+#     tickers = tickers
+
+#     timeframe = "1Day"
+
+#     start_date = pd.Timestamp("2011-12-31", tz="America/New_York").isoformat()
+#     end_date = pd.Timestamp("2023-02-07", tz="America/New_York").isoformat()
+
+
+#     # Use the Alpaca get_bars function to get current closing prices the portfolio
+
+#     ticker_data = api.get_bars(
+#         tickers,
+#         timeframe,
+#         start=start_date,
+#         end=end_date
+#     ).df
+
+#     return ticker_data.pivot(columns='symbol', values='close')
+
+def get_stocks(ticker_list):
     # return pd.read_csv(Path("./stocks.csv"), index_col='Date', parse_dates=True, infer_datetime_format=True)
-    load_dotenv()
-    alpaca_api_key = os.getenv("ALPACA_API_KEY")
-    alpaca_secret_key = os.getenv("ALPACA_SECRET_KEY")
 
-    api = tradeapi.REST(
-        alpaca_api_key,
-        alpaca_secret_key,
-        api_version = "v2"
-    )
 
     # Tickers for all assets, timeframe, timezone amd 10 years history
 
-    tickers = tickers
-
-    timeframe = "1Day"
-
-    start_date = pd.Timestamp("2011-12-31", tz="America/New_York").isoformat()
-    end_date = pd.Timestamp("2023-02-07", tz="America/New_York").isoformat()
+    start = datetime.datetime(2017, 12, 31)
 
 
-    # Use the Alpaca get_bars function to get current closing prices the portfolio
+    historical_datas = {}
+    for ticker in ticker_list:
+        historical_datas[ticker] = get_data(ticker, start_date = start, interval="1d")
 
-    ticker_data = api.get_bars(
-        tickers,
-        timeframe,
-        start=start_date,
-        end=end_date
-    ).df
-
-    return ticker_data.pivot(columns='symbol', values='close')
-
-
+    df = []
+    for ticker in ticker_list:
+        dfs = historical_datas[ticker].drop('ticker', axis=1)
+        df.append(dfs)
+    return  pd.concat(df, axis=1, keys=ticker_list).dropna()
 
     
 
@@ -154,16 +178,39 @@ def get_score(a,b,c,d,e,f):
 # translate answers to risk analysis survey into a risk category
 def get_risk(a,b,c,d,e,f):
 
-    total_score = score(a,b,c,d,e,f)
+    total_score = get_score(a,b,c,d,e,f)
     if (total_score < 13):
-        risk = 'Conservative'
+        risk = 'conservative'
     elif (total_score < 21):
-        risk = 'Moderately Conservative'
+        risk = 'balanced'
     elif (total_score < 29):
-        risk = "Moderate"
-    elif (total_score < 35):
-        risk = "Moderately Aggressive"
+        risk = "growth"
     else:
-        risk = "Aggressive"
+        risk = "aggressive"
         
-    return f"You scored {total_score} out of 40, indicating that you are a {risk} investor"
+    return risk
+
+def get_descr(a,b,c,d,e,f):
+    risk = get_risk(a,b,c,d,e,f)
+    return port_descr[risk]
+
+
+def get_adjclose(stocks, market):
+    ticker_list = list(stocks.columns.levels[0])
+    ticker_data = stocks
+    df = []
+    for ticker in ticker_list:
+        dfs = ticker_data[ticker]['adjclose']
+        df.append(dfs)
+    stock_adjclose = pd.concat(df, axis=1, keys=ticker_list)
+    
+    ticker_list = list(market.columns.levels[0])
+    ticker_data = market
+    df = []
+    for ticker in ticker_list:
+        dfs = ticker_data[ticker]['adjclose']
+        df.append(dfs)
+    market_adjclose = pd.concat(df, axis=1, keys=ticker_list)
+    
+
+    return stock_adjclose, market_adjclose
