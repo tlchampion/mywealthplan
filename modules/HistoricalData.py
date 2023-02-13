@@ -5,6 +5,9 @@ from bokeh.transform import cumsum
 from math import pi
 import modules.helpers as helpers
 import numpy as np
+from matplotlib.figure import Figure
+from matplotlib import cm
+from matplotlib.backends.backend_agg import FigureCanvas 
 
 answers_dict = helpers.get_answers()
 
@@ -32,6 +35,8 @@ answers_dict = helpers.get_answers()
 #     p.grid.grid_line_color = None
 #     return p
 
+
+# make pie chart showing portfolio asset distribution
 def make_pie(data):
     data = data.copy()
     # data = data.reset_index().rename(columns={'index': 'stock'})
@@ -59,6 +64,7 @@ def make_weight_chart(weight):
     return w
 
 
+# process downloaded asset data for use in other functions and calculations
 def get_cum_returns(stocks, market, weights):
     #pull adjclose figures from portfolio performance and market performance
     stock_df, market_df = helpers.get_adjclose(stocks, market)
@@ -77,36 +83,69 @@ def get_cum_returns(stocks, market, weights):
     df_market_cum_returns = (1 + market_daily_returns).cumprod()
     df_port_cum_returns = (1 + portfolio_returns).cumprod()
     
-    return df_port_cum_returns, df_market_cum_returns, portfolio_returns
+    return df_port_cum_returns, df_market_cum_returns, portfolio_returns, market_daily_returns
+    
+# prepare chart comparing performance of selected portfolio with S&P 500
+
+def make_comparison_chart(port_cum_returns, market_cum_returns, class_text):
+    text = f"{class_text.capitalize()} Portfolio"
+    title = f"Cumulative returns of {class_text.capitalize()} Portfolio vs Market"
     
     
-def make_comparison_chart(port_cum_return, market_cum_return):
+    fig0 = Figure(figsize=(16,8))
+    ax = fig0.subplots()
+    #ax = port_cum_returns.plot(figsize=(10,5), title="Cumulative returns of Conservative Portfolio vs Market")
+    #gmarket_cum_returns.plot(ax=ax)
+    chart = ax.plot(port_cum_returns['adjclose'])
+    ax.plot(market_cum_returns['^GSPC'])
+    ax.set_title(title)
 
-    ax = port_cum_returns.plot(figsize=(10,5), title="Cumulative returns of Conservative Portfolio vs Market")
-    market_cum_returns.plot(ax=ax)
-
-    ax.legend(['Conservative Portfolio',
+    ax.legend([text,
          'S&P'])
     
-    return ax
+    
+    
+    return fig0
 
+# prepare boxplot showing spread of daily returns for selected portfolio
 def make_spread_plot(df_port_cum_returns):
-    return df_port_cum_returns.plot(kind='box', figsize=(10,5), title="Spread of daily returns of Portfolio")
+    fig0 = Figure(figsize=(16,8))
+    ax = fig0.subplots()
+    chart = ax.boxplot(df_port_cum_returns)
+    ax.set_title("Spread of Daily Returns for Portfolio")
+    ax.axes.xaxis.set_ticklabels([])
+    return fig0
 
+#calculate statistics for portfolio
 
-def get_stats(stocks, market, weights):
-    #pull adjclose figures from portfolio performance and market performance
-    stock_df, market_df = helpers.get_adjclose(stocks, market)
+def get_stats(df_port_cum_returns, portfolio_returns):
+    portfolio_std = df_port_cum_returns.std()
     
-    #get weights for portfolio assets
-    stock_weights = np.array(weights['weight'].to_list())
+    annual_port_std = df_port_cum_returns.std() * np.sqrt(252)
     
-    #calculate portfolio return factoring in weights
-    stock_df = stock_df.pct_change().dropna()
-    portfolio_returns = pd.DataFrame(stock_df.dot(stock_weights)).rename(columns={0: 'adjclose'})
-
-    #calculate market and portfolio cumulative return
-    df_market_cum_returns = (1 + market_df).cumprod()
-    df_port_cum_returns = (1 + portfolio_returns).cumprod()
+    annual_avg_port_return = portfolio_returns.mean() * 252
     
+    port_sharpe_ratio = annual_avg_port_return / annual_port_std
+    li = [portfolio_std, annual_port_std, annual_avg_port_return, port_sharpe_ratio]
+    df = pd.concat(li, axis=1, keys=['Portfolio Standard Deviation', 'Portfolio Annual Standard Deviation',
+                                        'Average Annual Portfolio Return', 'Sharpe Ratio']).T
+    df = df.rename(columns={'adjclose':'Statistic'})
     
+    return df
+ 
+# prepare 60 day rolling beta plot and retrieve average beta score for selected portfolio
+    
+def beta_analysis(market_daily_returns, portfolio_returns):
+    market_daily_returns = market_daily_returns.rename(columns={'^GSPC':'adjclose'})
+    market_variance = market_daily_returns.rolling(window=60).var()
+    portfolio_cov = portfolio_returns.rolling(window=60).cov(market_daily_returns)
+    portfolio_beta = portfolio_cov/market_variance
+    
+    portfolio_beta_mean = portfolio_beta.mean()
+    
+    fig0 = Figure(figsize=(16,8))
+    ax = fig0.subplots()
+    chart = ax.plot(portfolio_beta)
+    ax.set_title("Portfolio 60-day Rolling Beta")
+    # ax.axes.xaxis.set_ticklabels([])
+    return fig0, portfolio_beta_mean
