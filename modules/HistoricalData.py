@@ -135,17 +135,17 @@ def get_stats(df_port_cum_returns, portfolio_returns):
  
 # prepare 60 day rolling beta plot and retrieve average beta score for selected portfolio
     
-def beta_analysis(market_daily_returns, portfolio_returns):
-    market_daily_returns = market_daily_returns.rename(columns={'^GSPC':'adjclose'})
-    market_variance = market_daily_returns.rolling(window=60).var()
-    portfolio_cov = portfolio_returns.rolling(window=60).cov(market_daily_returns)
-    portfolio_beta = portfolio_cov/market_variance
+# def beta_analysis(market_daily_returns, portfolio_returns):
+#     market_daily_returns = market_daily_returns.rename(columns={'^GSPC':'adjclose'})
+#     market_variance = market_daily_returns.rolling(window=60).var()
+#     portfolio_cov = portfolio_returns.rolling(window=60).cov(market_daily_returns)
+#     portfolio_beta = portfolio_cov/market_variance
     
-    portfolio_beta_mean = portfolio_beta.mean()
+#     portfolio_beta_mean = portfolio_beta.mean()
     
-    fig0 = Figure(figsize=(16,8))
-    ax = fig0.subplots()
-    chart = ax.plot(portfolio_beta)
-    ax.set_title("Portfolio 60-day Rolling Beta")
-    # ax.axes.xaxis.set_ticklabels([])
-    return fig0, portfolio_beta_mean
+#     fig0 = Figure(figsize=(16,8))
+#     ax = fig0.subplots()
+#     chart = ax.plot(portfolio_beta)
+#     ax.set_title("Portfolio 60-day Rolling Beta")
+#     # ax.axes.xaxis.set_ticklabels([])
+#     return fig0, portfolio_beta_mean

@@ -31,7 +31,8 @@ The following python packages must be installed to run the application locally:
 * panel
 * bokeh
 * matplotlib
-* alpaca_trade_api
+* yahoo_fin
+* numpy
 
 These packages may be individually installed into the environment of your choice or you may create a new conda environment using the included environment.yml file. If you prefer using pip, the included requirements.txt file may be used.
 
@@ -65,17 +66,31 @@ Once determined, the risk tolerance category is used to assign the user to one o
 
 ## Contributors
 
-Ahmad Takatkah
-Lourdes
-Patricio Gomez
-Lovedeep Dingh
-Thomas L. Champion
+* Ahmad Takatkah
+* Lourdes
+* Patricio Gomez
+* Lovedeep Dingh
+* Thomas L. Champion
 
 ---
 
 ## License
 
 License information can be found in the included LICENSE file.
+
+---
+## Credits
+* Risk Analysis Survey was compiled based upon a survey provided by [Lincoln Financial Group](https://bit.ly/3InwBMP)
+* Code for generating the Monte Carlo Simulation was modified from code provided by UC Berkeley Extension FInTech Bootcamp
+
+___
+## Future Work
+
+Future work and/or enhancements to this project include:
+* implementing a more robust Risk Analysis Survey
+* adding in features to allow a user to fine-tuning their portfolio
+* leveraging a Machine Learning algorithm
+
 
 ---
 
