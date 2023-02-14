@@ -36,6 +36,11 @@ answers_dict = helpers.get_answers()
 #     return p
 
 
+
+
+
+
+
 # make pie chart showing portfolio asset distribution
 def make_pie(data):
     data = data.copy()
@@ -89,12 +94,12 @@ def get_cum_returns(stocks, market, weights):
 
 def make_comparison_chart(port_cum_returns, market_cum_returns, class_text):
     text = f"{class_text.capitalize()} Portfolio"
-    title = f"Cumulative returns of {class_text.capitalize()} Portfolio vs Market"
+    title = f"{class_text.capitalize()} Portfolio Cumulative Returns vs S&P 500"
     
     
     fig0 = Figure(figsize=(16,8))
     ax = fig0.subplots()
-    #ax = port_cum_returns.plot(figsize=(10,5), title="Cumulative returns of Conservative Portfolio vs Market")
+    #ax = port_cum_returns.plot(figsize=(10,5), title="Cumulative Returns of Conservative Portfolio vs S&P 500")
     #gmarket_cum_returns.plot(ax=ax)
     chart = ax.plot(port_cum_returns['adjclose'])
     ax.plot(market_cum_returns['^GSPC'])
@@ -111,9 +116,9 @@ def make_comparison_chart(port_cum_returns, market_cum_returns, class_text):
 def make_spread_plot(df_port_cum_returns):
     fig0 = Figure(figsize=(16,8))
     ax = fig0.subplots()
-    chart = ax.boxplot(df_port_cum_returns)
-    ax.set_title("Spread of Daily Returns for Portfolio")
-    ax.axes.xaxis.set_ticklabels([])
+    chart = ax.hist(df_port_cum_returns)
+    ax.set_title("Spread of Daily Returns")
+    # ax.axes.xaxis.set_ticklabels([])
     return fig0
 
 #calculate statistics for portfolio
@@ -127,9 +132,11 @@ def get_stats(df_port_cum_returns, portfolio_returns):
     
     port_sharpe_ratio = annual_avg_port_return / annual_port_std
     li = [portfolio_std, annual_port_std, annual_avg_port_return, port_sharpe_ratio]
-    df = pd.concat(li, axis=1, keys=['Portfolio Standard Deviation', 'Portfolio Annual Standard Deviation',
-                                        'Average Annual Portfolio Return', 'Sharpe Ratio']).T
+    df = pd.concat(li, axis=1, keys=['Standard Deviation', 'Annualized Standard Deviation',
+                                        'Annual Average Portfolio Return', 'Portfolio Sharpe Ratio']).T
     df = df.rename(columns={'adjclose':'Statistic'})
+    
+    
     
     return df
  
@@ -149,3 +156,35 @@ def get_stats(df_port_cum_returns, portfolio_returns):
 #     ax.set_title("Portfolio 60-day Rolling Beta")
 #     # ax.axes.xaxis.set_ticklabels([])
 #     return fig0, portfolio_beta_mean
+
+def get_past_performance_intro(port_class_text):
+    
+    return f""" <h4>
+    Below you can find information on the historical performance of the {port_class_text} portfolio, including a comparison to the performance of the S&P 500.<br><br>
+
+    These metrics provide valuable information, but it's important to remember that they are based on historical data and that past performance is not indicative of future results. Additionally, these metrics should be used in conjunction with other factors, such as your investment goals and risk tolerance, to make informed investment decisions.
+    
+    
+    The following two charts are presented:<br><br>
+
+The "Portfolio Cumulative Returns vs S&P 500", which provides a visual comparison of historic performance of your portfolio against that of the S&P 500, an often-used market standard. The returns include both capital appreciation and income.
+<br><br>
+
+The "Spread of Daily Returns" chart which provides a visual representation of the frequency and distribution of returns of an investment over a specified time period. It can help you understand how volatile the investment is, or how much its returns can fluctuate over time.
+<br><br><br>
+
+In addition to the charts, a table with the following statistical values is included:
+<br><br>
+Standard Deviation: This is a statistical measure of the volatility of an investment's returns. It measures how far the returns deviate from their average over a specified time period. The higher the standard deviation, the more volatile the investment is.
+<br><br>
+Annualized Standard Deviation: This is the standard deviation of an investment's returns, adjusted to an annual basis. This allows you to compare the volatility of different investments on an apples-to-apples basis.
+<br><br>
+Annual Average Portfolio Returns: This is the average return of an investment portfolio over a specified time period, expressed on an annual basis. For example, if a portfolio generated a total return of 10% over the course of 5 years, its annual average return would be 2%.
+<br><br>
+Portfolio Sharpe Ratio: This is a risk-adjusted performance metric that measures the return of an investment relative to its risk.  The higher the Sharpe ratio, the better the portfolio's return relative to its risk. 
+<br><br>
+    </h4>"""
+
+
+def get_past_performance_footer():
+    return """These metrics provide valuable information, but it's important to remember that they are based on historical data and that past performance is not indicative of future results. Additionally, these metrics should be used in conjunction with other factors, such as your investment goals and risk tolerance, to make informed investment decisions."""

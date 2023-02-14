@@ -61,15 +61,29 @@ answers_dict = {
 port_descr = {"conservative": "This portfolio has a low-risk, low-reward strategy, with the majority of investments being in bonds (60%) and a smaller portion in stocks (20%). It also includes a small allocation to cryptos (10%) and commodities (10%) to add some diversity. This portfolio is suitable for individuals who are risk-averse and prioritize stability over potential higher returns.",
  "balanced": "This portfolio strikes a balance between risk and reward with equal allocations to stocks (40%) and bonds (40%). It also includes a small allocation to cryptos (10%) and commodities (10%) for diversity. This portfolio is suitable for individuals who are looking for a moderate level of risk and a moderate level of returns.",
  "growth": "This portfolio has a high-risk, high-reward strategy, with the majority of investments being in stocks (60%) and a smaller portion in bonds (20%). It also includes a small allocation to cryptos (10%) and commodities (10%) for diversity. This portfolio is suitable for individuals who have a long-term investment horizon and are willing to take on a higher level of risk in exchange for potential higher returns.",
- "aggressive": "This portfolio has a very high-risk, very high-reward strategy, with the majority of investments being in stocks (70%) and a small portion in bonds (5%). It also includes a substantial allocation to cryptos (15%) and a small allocation to commodities (10%) for diversity. This portfolio is suitable for individuals who are willing to take on a significant amount of risk in pursuit of potentially high returns and have a long-term investment horizon."}
+ "aggressive": "This portfolio has a very high-risk, very high-reward strategy, with the majority of investments being in stocks (70%) and a small portion in bonds (5%). It also includes a substantial allocation to cryptos (15%) and a small allocation to commodities (10%) for diversity. This portfolio is suitable for individuals who are willing to take on a significant amount of risk in pursuit of potentially high returns and have a long-term investment horizon.",
+             "alternative": "This portfolio comprises of a equally weighted basket of 4 assets, all in different asset classes. This portfolio is suitable for the investor who has a long term sight for the growth of new frontier technology in crypto, global growth with an exposure to global commodities, traditional technology sector with an emphasis in tech in the S&P 500,  and of course a fundamental backing with exposure to the global real estate market." }
 
 
+# these are the 'old' test portfolios
+# conservative = {'^GSPC': [0.20, 'STOCKS'], '^TNX': [0.60, "BONDS"], 'BTC-USD': [0.10, "CRYPTO"], 'BZ=F': [0.10, "COMMODOTIES"]}
+# balanced = {'^GSPC': [0.40, 'STOCKS'], '^TNX': [0.40, "BONDS"], 'BTC-USD': [0.10, "CRYPTO"], 'BZ=F': [0.10, "COMMODOTIES"]}
+# growth = {'^GSPC': [0.60, 'STOCKS'], '^TNX': [0.20, "BONDS"], 'BTC-USD': [0.10, "CRYPTO"], 'BZ=F': [0.10, "COMMODOTIES"]}
+# aggressive = {'^GSPC': [0.70, 'STOCKS'], '^TNX': [0.05, "BONDS"], 'BTC-USD': [0.15, "CRYPTO"], 'BZ=F': [0.10, "COMMODOTIES"]}
 
-conservative = {'^GSPC': [0.20, 'STOCKS'], '^TNX': [0.60, "BONDS"], 'BTC-USD': [0.10, "CRYPTO"], 'BZ=F': [0.10, "COMMODOTIES"]}
-balanced = {'^GSPC': [0.40, 'STOCKS'], '^TNX': [0.40, "BONDS"], 'BTC-USD': [0.10, "CRYPTO"], 'BZ=F': [0.10, "COMMODOTIES"]}
-growth = {'^GSPC': [0.60, 'STOCKS'], '^TNX': [0.20, "BONDS"], 'BTC-USD': [0.10, "CRYPTO"], 'BZ=F': [0.10, "COMMODOTIES"]}
-aggressive = {'^GSPC': [0.70, 'STOCKS'], '^TNX': [0.05, "BONDS"], 'BTC-USD': [0.15, "CRYPTO"], 'BZ=F': [0.10, "COMMODOTIES"]}
-     
+## these are the 'new' portfolios.
+## currently having ticker issues
+# alternative = {'XLK': [0.25, 'STOCKS'], 'REZ': [0.25, "REAL ESTATE"], 'GBTC': [0.25, "CRYPTO"], 'GSG': [0.25, "COMMODOTIES"]}
+# balanced = {'IVV': [0.40, 'STOCKS'], 'IEI': [0.40, "BONDS"], 'GBTC': [0.10, "CRYPTO"], 'USCI': [0.10, "COMMODOTIES"]}
+# aggressive = {'XLK': [0.70, 'STOCKS'], 'IEI': [0.05, "BONDS"], 'GBTC': [0.15, "CRYPTO"], 'USCI': [0.10, "COMMODOTIES"]}
+# conservative = {'XLK': [0.20, 'STOCKS'], 'BNDX': [0.60, "BONDS"], 'GBTC': [0.10, "CRYPTO"], 'USL': [0.10, "COMMODOTIES"]}
+# growth = {'XLK': [0.60, 'STOCKS'], 'BNDX': [0.20, "BONDS"], 'GBTC': [0.10, "CRYPTO"], 'USL': [0.10, "COMMODOTIES"]}
+
+conservative = {'XLK': [0.20, 'STOCKS'], 'BNDX': [0.60, "BONDS"], 'GBTC': [0.10, "CRYPTO"], 'AAAU': [0.10, "COMMODOTIES"]}
+balanced ={'IVV': [0.40, 'STOCKS'], 'IEI': [0.40, 'BONDS'], 'GBTC': [0.10, 'CRYPTO'], 'AAAU': [0.10, 'COMMODOTIES']}
+growth = {'XLK': [0.60, 'STOCKS'], 'BNDX': [0.20, "BONDS"], 'GBTC': [0.10, "CRYPTO"], 'USCI': [0.10, "COMMODOTIES"]}
+aggressive = {'XLK': [0.70, 'STOCKS'], 'IEI': [0.05, 'BONDS'], 'GBTC': [0.15, 'CRYPTO'], 'USCI': [0.10, 'COMMODOTIES']}
+alternative = {'XLK': [0.50, 'STOCKS'], 'REZ': [0.25, "REAL ESTATE"], 'GBTC': [0.10, "CRYPTO"], 'GSG': [0.15, "COMMODOTIES"]}
 
 
 # functions to return list of questions and answers
@@ -92,8 +106,10 @@ def get_weights(total_score):
         return pd.DataFrame.from_dict(balanced, orient='index', columns=['weight', 'category'])
     elif (total_score < 29):
         return pd.DataFrame.from_dict(growth, orient='index', columns=['weight', 'category'])
+    elif (total_score < 35):
+        return pd.DataFrame.from_dict(aggressive, orient='index', columns=['weight','category'])
     else:
-        return pd.DataFrame.from_dict(aggressive, orient='index', columns=['weight', 'category'])
+        return pd.DataFrame.from_dict(alternative, orient='index', columns=['weight', 'category'])
 
     
 
@@ -104,8 +120,10 @@ def get_tickers(total_score):
         return list(balanced.keys())
     elif (total_score < 29):
         return list(growth.keys())
-    else:
+    elif (total_score < 35):
         return list(aggressive.keys())
+    else:
+        return list(alternative.keys())
     
     
 # def get_stocks(tickers):
@@ -185,8 +203,11 @@ def get_risk(a,b,c,d,e,f):
         risk = 'balanced'
     elif (total_score < 29):
         risk = "growth"
-    else:
+    elif (total_score < 35):
         risk = "aggressive"
+    else:
+        risk = 'alternative'
+        
         
     return risk
 
@@ -214,3 +235,4 @@ def get_adjclose(stocks, market):
     
 
     return stock_adjclose, market_adjclose
+
