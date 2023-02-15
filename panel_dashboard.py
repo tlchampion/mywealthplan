@@ -1,7 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[1]:
 
 
 import panel as pn
@@ -16,7 +12,7 @@ from panel.template import FastListTemplate
 from pathlib import Path
 from yahoo_fin.stock_info import get_data
 import datetime
-
+import os
 # import matplotlib.pyplot as plt
 # import seaborn as sn
 # %matplotlib ipympl
@@ -43,15 +39,14 @@ import modules.MCTab as MCTab
 import modules.intro as intro
 
 
-# In[2]:
+
 
 
 # initialize the dashboard framework
 
-template = FastListTemplate(title="Portfolio Selection Tool", header_background = 'blue')
+template = FastListTemplate(title="My Wealth Path", header_background = 'blue')
 
 
-# In[3]:
 
 
 # defining the risk analysis survey questions
@@ -68,7 +63,7 @@ template = FastListTemplate(title="Portfolio Selection Tool", header_background 
 questions_dict = helpers.get_questions()
 
 
-# In[4]:
+
 
 
 # defining the valid answers to the questions and assigninig points to each answer
@@ -104,7 +99,7 @@ questions_dict = helpers.get_questions()
 answers_dict = helpers.get_answers()
 
 
-# In[5]:
+
 
 
 # define functions to aggregate risk analysis response scores for presentation or usage in other functions
@@ -151,7 +146,6 @@ def risk(a,b,c,d,e,f):
 #         return "image3.jpg"
 
 
-# In[6]:
 
 
 # define the dropdown/selection boxes for the risk analysis survey answers
@@ -178,7 +172,6 @@ q6 = pn.widgets.Select(value=list(answers_dict[6].keys())[0],
 button = pn.widgets.Button(name="Submit")
 
 
-# In[7]:
 
 
 # define the header box for the sidebar
@@ -189,7 +182,7 @@ header_box = pn.WidgetBox(text,width=300, height=75, align='center')
 spacer = pn.layout.Spacer(margin=10)
 
 
-# In[8]:
+
 
 
 # assembling the sidebar
@@ -212,7 +205,7 @@ template.sidebar.append(pn.Row(pn.Column(header_box,
                                          )))
 
 
-# In[9]:
+
 
 
 # get values for each of the answers
@@ -248,7 +241,7 @@ def get_values():
 
 
 
-# In[10]:
+
 
 
 # def show_distr():
@@ -261,7 +254,7 @@ def get_values():
 
 
 
-# In[11]:
+
 
 
 a,b,c,d,e,f = get_values()
@@ -271,14 +264,14 @@ weights = helpers.get_weights(helpers.get_score(a,b,c,d,e,f))
 market = helpers.get_stocks(['^GSPC'])
 
 
-# In[ ]:
+
 
 
 stock, market = helpers.get_adjclose(stocks,market)
 
 
 
-# In[ ]:
+
 
 
 # defining the contents of the main (right-hand) pane in the Panel dashboard
@@ -303,15 +296,29 @@ def main_display(_):
 
     
 ##########
-    # Setting up Introduction tab
+#     # Setting up Introduction tab
  
 
     
-    intro_text = intro.get_intro()
-   # disclaimer_text = tab0.get_disclaimer()
+#     intro_text = intro.get_intro()
+#    # disclaimer_text = tab0.get_disclaimer()
     
-    intro_pane = pn.pane.HTML(intro_text)
-    #disclaimer_pane = pn.pane.HTML(disclaimer_text)
+#     intro_pane = pn.pane.HTML(intro_text)
+#     #disclaimer_pane = pn.pane.HTML(disclaimer_text)
+
+
+# Setting up Introduction tab
+    intro_text = intro.get_intro()
+    portfolios_intro_text = intro.get_portfolios_intro()
+    disclaimer_text = intro.get_disclaimer()
+    intro_pane = pn.pane.Markdown(intro_text)
+    tabs_pane = pn.pane.PNG("https://drive.google.com/uc?id=1RuqJmAkdxuNSkFoDk4OB6Qi_JIsGgLlD", width=400)
+    portfolios_intro_pane = pn.pane.Markdown(portfolios_intro_text)
+    portfolios_pane = pn.pane.PNG("https://drive.google.com/uc?id=1lr_nc7ayQNyIvSJll5E61f4cZZPokKlK", width=1000)
+    disclaimer_pane = pn.pane.Markdown(disclaimer_text)
+#########
+
+
     
 #########
     # defining contents for 'Portfolio Profile' pane
@@ -451,7 +458,7 @@ def main_display(_):
 #                     )
                   
  
-    return pn.Tabs(("Introduction", pn.Column(intro_pane, sizing_mode='stretch_width')),
+    return pn.Tabs(("Introduction", pn.Column(intro_pane, portfolios_intro_pane, portfolios_pane, disclaimer_pane)),
                    ("Portfolio Profile", pn.Column(pn.Row(port_desc_pane),
                                                    pn.Row(bokeh_pane, df_weights_pane))),
                    ("Past Performance", pn.Column(pn.Row(header_pane),
@@ -476,7 +483,7 @@ def main_display(_):
 #                     )
 
 
-# In[ ]:
+
 
 
 #adding main display area to dashboard
@@ -484,7 +491,7 @@ def main_display(_):
 template.main.append(main_display)
 
 
-# In[ ]:
+
 
 
 # displaying dashboard
@@ -493,7 +500,7 @@ template.main.append(main_display)
 template.show()
 
 
-# In[ ]:
+
 
 
 

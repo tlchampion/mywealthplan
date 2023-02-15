@@ -1,11 +1,15 @@
+# set of functions that define the questions and answers for the risk analysis survery,
+# portfolio contents and distributions
+# 
+# also contains functions that will calculate user's risk score
+# and translate that into a risk category
+#
+# additional functions retrieve historical stock performance information from yahoo
+# and also extract closing data from the historical data
+
 import pandas as pd
 from pathlib import Path
-import os
-import requests
-import json
 import pandas as pd
-from dotenv import load_dotenv
-
 import datetime
 from yahoo_fin.stock_info import get_data
 
@@ -64,20 +68,7 @@ port_descr = {"conservative": "This portfolio has a low-risk, low-reward strateg
  "aggressive": "This portfolio has a very high-risk, very high-reward strategy, with the majority of investments being in stocks (70%) and a small portion in bonds (5%). It also includes a substantial allocation to cryptos (15%) and a small allocation to commodities (10%) for diversity. This portfolio is suitable for individuals who are willing to take on a significant amount of risk in pursuit of potentially high returns and have a long-term investment horizon.",
              "alternative": "This portfolio comprises of a equally weighted basket of 4 assets, all in different asset classes. This portfolio is suitable for the investor who has a long term sight for the growth of new frontier technology in crypto, global growth with an exposure to global commodities, traditional technology sector with an emphasis in tech in the S&P 500,  and of course a fundamental backing with exposure to the global real estate market." }
 
-
-# these are the 'old' test portfolios
-# conservative = {'^GSPC': [0.20, 'STOCKS'], '^TNX': [0.60, "BONDS"], 'BTC-USD': [0.10, "CRYPTO"], 'BZ=F': [0.10, "COMMODOTIES"]}
-# balanced = {'^GSPC': [0.40, 'STOCKS'], '^TNX': [0.40, "BONDS"], 'BTC-USD': [0.10, "CRYPTO"], 'BZ=F': [0.10, "COMMODOTIES"]}
-# growth = {'^GSPC': [0.60, 'STOCKS'], '^TNX': [0.20, "BONDS"], 'BTC-USD': [0.10, "CRYPTO"], 'BZ=F': [0.10, "COMMODOTIES"]}
-# aggressive = {'^GSPC': [0.70, 'STOCKS'], '^TNX': [0.05, "BONDS"], 'BTC-USD': [0.15, "CRYPTO"], 'BZ=F': [0.10, "COMMODOTIES"]}
-
-## these are the 'new' portfolios.
-## currently having ticker issues
-# alternative = {'XLK': [0.25, 'STOCKS'], 'REZ': [0.25, "REAL ESTATE"], 'GBTC': [0.25, "CRYPTO"], 'GSG': [0.25, "COMMODOTIES"]}
-# balanced = {'IVV': [0.40, 'STOCKS'], 'IEI': [0.40, "BONDS"], 'GBTC': [0.10, "CRYPTO"], 'USCI': [0.10, "COMMODOTIES"]}
-# aggressive = {'XLK': [0.70, 'STOCKS'], 'IEI': [0.05, "BONDS"], 'GBTC': [0.15, "CRYPTO"], 'USCI': [0.10, "COMMODOTIES"]}
-# conservative = {'XLK': [0.20, 'STOCKS'], 'BNDX': [0.60, "BONDS"], 'GBTC': [0.10, "CRYPTO"], 'USL': [0.10, "COMMODOTIES"]}
-# growth = {'XLK': [0.60, 'STOCKS'], 'BNDX': [0.20, "BONDS"], 'GBTC': [0.10, "CRYPTO"], 'USL': [0.10, "COMMODOTIES"]}
+# define the asset contents, weights and categories for the portfolios
 
 conservative = {'XLK': [0.20, 'STOCKS'], 'BNDX': [0.60, "BONDS"], 'GBTC': [0.10, "CRYPTO"], 'AAAU': [0.10, "COMMODOTIES"]}
 balanced ={'IVV': [0.40, 'STOCKS'], 'IEI': [0.40, 'BONDS'], 'GBTC': [0.10, 'CRYPTO'], 'AAAU': [0.10, 'COMMODOTIES']}
@@ -95,11 +86,10 @@ def get_answers():
     return answers_dict
 
 
-# functions to load in weights and stocks from saved files
+# functions to load in weights and category for the assets in a portfolio
 
 def get_weights(total_score):
-    # return [0.30,0.20,0.40,0.10]
-    # return pd.read_csv(Path("./weights1.csv"))
+
     if (total_score < 13):
         return pd.DataFrame.from_dict(conservative, orient='index', columns=['weight', 'category'])
     elif (total_score < 21):
@@ -111,7 +101,8 @@ def get_weights(total_score):
     else:
         return pd.DataFrame.from_dict(alternative, orient='index', columns=['weight', 'category'])
 
-    
+# obtain the ticker symbols to be passed to the yahoo_fin api
+# ticker symbols are the keys to the portfolio dictionaries
 
 def get_tickers(total_score):
     if (total_score < 13):
@@ -125,49 +116,11 @@ def get_tickers(total_score):
     else:
         return list(alternative.keys())
     
-    
-# def get_stocks(tickers):
-#     # return pd.read_csv(Path("./stocks.csv"), index_col='Date', parse_dates=True, infer_datetime_format=True)
-#     load_dotenv()
-#     alpaca_api_key = os.getenv("ALPACA_API_KEY")
-#     alpaca_secret_key = os.getenv("ALPACA_SECRET_KEY")
-
-#     api = tradeapi.REST(
-#         alpaca_api_key,
-#         alpaca_secret_key,
-#         api_version = "v2"
-#     )
-
-#     # Tickers for all assets, timeframe, timezone amd 10 years history
-
-#     tickers = tickers
-
-#     timeframe = "1Day"
-
-#     start_date = pd.Timestamp("2011-12-31", tz="America/New_York").isoformat()
-#     end_date = pd.Timestamp("2023-02-07", tz="America/New_York").isoformat()
-
-
-#     # Use the Alpaca get_bars function to get current closing prices the portfolio
-
-#     ticker_data = api.get_bars(
-#         tickers,
-#         timeframe,
-#         start=start_date,
-#         end=end_date
-#     ).df
-
-#     return ticker_data.pivot(columns='symbol', values='close')
+# calls the api to retrieve historical stock data and formats into a dataframe for use in other functions
 
 def get_stocks(ticker_list):
-    # return pd.read_csv(Path("./stocks.csv"), index_col='Date', parse_dates=True, infer_datetime_format=True)
-
-
-    # Tickers for all assets, timeframe, timezone amd 10 years history
 
     start = datetime.datetime(2017, 12, 31)
-
-
     historical_datas = {}
     for ticker in ticker_list:
         historical_datas[ticker] = get_data(ticker, start_date = start, interval="1d")
@@ -211,10 +164,16 @@ def get_risk(a,b,c,d,e,f):
         
     return risk
 
+
+# obtain a description of the portfolio selected based upon risk score
+
 def get_descr(a,b,c,d,e,f):
     risk = get_risk(a,b,c,d,e,f)
     return port_descr[risk]
 
+# obtain just the adjclose amount for the portfolio asssets
+# uses both the historical data from the selected portfolio
+# as well as the historical data from S&P 500
 
 def get_adjclose(stocks, market):
     ticker_list = list(stocks.columns.levels[0])

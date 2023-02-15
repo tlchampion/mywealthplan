@@ -1,8 +1,8 @@
-# Portfolio Selection Tool
+# MyWealthPlan Portfolio Selection Tool
 
-The Portfolio Selection Tool is a web application designed to determine a user's risk tolerance for investments, and based upon that tolerance present them with information on one of 5 preselected portfolios who's asset weightings align with the user's risk tolerance.  
+The Portfolio Selection Tool is a dashboard application designed to determine a user's risk tolerance for investments, and based upon that tolerance present them with information on one of 5 preselected portfolios who's asset weightings align with the user's risk tolerance.  
 
-
+After being matched to a portfolio, the user can navigate between 3 informational tabs to find details related to their portfolio, including asset category weights, historical performance and potential future performance.
 
 
 ---
@@ -11,11 +11,11 @@ The Portfolio Selection Tool is a web application designed to determine a user's
 
 The Portfolio Selection Tool is written in Python and uses the [Panel](https://panel.holoviz.org/index.html) dashboarding solution to present information to the user. 
 
-Visualizations are provided by the [Bokeh](https://bokeh.org) and [Matplotlib](https://matplotlib.org) libraries. 
+Visualizations are provided by the [Bokeh](https://bokeh.org), [hvPlot](https://hvplot.holoviz.org) and [Matplotlib](https://matplotlib.org) libraries. 
 
 Details on asset performance are retrieved using the [Yahoo Finance](https://finance.yahoo.com) API.
 
-The [Pandas](https://pandas.pydata.org) library is used to work with the asset data retrieved from the API.
+The [Pandas](https://pandas.pydata.org) and [Numpy](https://numpy.org) libraries are used to work with the asset data retrieved from the API.
 
 
 
@@ -33,16 +33,49 @@ The following python packages must be installed to run the application locally:
 * matplotlib
 * yahoo_fin
 * numpy
+* hvplot
+* jupyterlab (only if the .ipynb file is used. running the .py file does not require jupyterlab)
 
-These packages may be individually installed into the environment of your choice or you may create a new conda environment using the included environment.yml file. If you prefer using pip, the included requirements.txt file may be used.
+These packages may be individually installed into the environment of your choice or you may create a new conda environment using the included environment.yml file. 
 
+```
+conda env create -f environment.yml
+```
+
+If you prefer using pip, the included requirements.txt file may be used to install the required packages.
+
+```
+pip install -r requirements.txt
+```
+
+## Launching
+
+The Portfolio Selection Tool can be run from the jupyter notebook or by using the included python script. In either case, once launched a [Panel](https://panel.holoviz.org/index.html) dashboard will be displayed.
+
+To run the included python script (mywealthplan.py issue the following command after switching to the correct python environment:
+
+```
+panel serve mywealthplan.py
+```
+This will initiate a local server. Please review the output for the server address, which may then be accessed using the browser of your choice.
+
+<img src="images/serving.png" height=60%, width=60%>
+
+
+
+To run the jupyter notebook (mywealthplan.ipynb) begin by launching jupyter lab in the correct python environment:
+
+```
+jupyter lab
+```
+
+After Jupyter Lab is running, open the mywealthplan.ipynb file from the sidebar and then use Run > Run All Cells from the menu.
 
 
 ---
 
 ## Usage
 
-The Portfolio Selection Tool can be run from the jupyter notebook or by using the included python script. In either case, once launched a new browser tab will be opened displaying a [Panel](https://panel.holoviz.org/index.html) dashboard.
 
 The left-hand portion of the dashboard consists of a six-question risk tolerance questionnaire. Once the questions are answered and the submit button is clicked the a risk tolerance score will be calculated for the user and they will be assigned a risk tolerance category. 
 
@@ -89,8 +122,9 @@ Future work and/or enhancements to this project include:
 * Implementing a more robust Risk Analysis Survey
 * Adding in features to allow a user to fine-tuning their portfolio
 * Leveraging a Machine Learning algorithm to optimize and further customize portfolios
-* Adding Market Information for the Client
-* Improve visualizations and UX
+* Adding market information for the client
+* Improve visualizations
+* Enhance UI/UX
 
 
 ---

@@ -1,8 +1,11 @@
+# this script is a slightly modified version of one supplied by the 
+# UC Berkeley Extension FinTech program. 
+# Updates were made to use matplotlib for the distribution plot
+
 # Import libraries and dependencies
 import numpy as np
 import pandas as pd
 import os
-
 import datetime as dt
 import pytz
 import hvplot.pandas
@@ -147,26 +150,7 @@ class MCSimulation:
         plot_title = f"{self.nSim} Simulations of Cumulative Portfolio Return Trajectories Over the Next {self.nTrading} Trading Days."
         return self.simulated_return.hvplot(legend=False,title=plot_title,height=250, width=500)
     
-#     def plot_distribution(self):
-#         """
-#         Visualizes the distribution of cumulative returns simulated using calc_cumulative_return method.
-
-#         """
-        
-#         # Check to make sure that simulation has run previously. 
-#         if not isinstance(self.simulated_return,pd.DataFrame):
-#             self.calc_cumulative_return()
-        
-#         # Use the `plot` function to create a probability distribution histogram of simulated ending prices
-#         # with markings for a 95% confidence interval
-#         plot_title = f"Distribution of Final Cumuluative Returns Across All {self.nSim} Simulations"
-        
-#         plt = self.simulated_return.iloc[-1, :].plot(kind='hist', bins=10,density=True,title=plot_title)
-#         plt.axvline(self.confidence_interval.iloc[0], color='r')
-#         plt.axvline(self.confidence_interval.iloc[1], color='r')
-#         return plt
-    
-        
+      
     def plot_distribution(self):
         """
         Visualizes the distribution of cumulative returns simulated using calc_cumulative_return method.
