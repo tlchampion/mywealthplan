@@ -5,19 +5,24 @@
 
 
 import panel as pn
-pn.extension(template='bootstrap')
+# pn.extension(template='bootstrap')
+pn.extension('tabulator')
 # pn.extension('ipywidgets')
 import pandas as pd
+import numpy as np
 import hvplot.pandas
-from panel.template import BootstrapTemplate
+# from panel.template import BootstrapTemplate
+from panel.template import FastListTemplate
 from pathlib import Path
+from yahoo_fin.stock_info import get_data
+import datetime
 
 # import matplotlib.pyplot as plt
 # import seaborn as sn
-get_ipython().run_line_magic('matplotlib', 'ipympl')
+# %matplotlib ipympl
 
 
-get_ipython().run_line_magic('matplotlib', 'inline')
+
 
 
 # from bokeh.palettes import Category20c, Category20
@@ -30,11 +35,12 @@ from matplotlib.figure import Figure
 from matplotlib import cm
 from matplotlib.backends.backend_agg import FigureCanvas 
 
-from tab1 import make_pie, image, get_html, make_weight_chart
-import helpers
-from tab4 import make_chart
-import tab5
-import tab0
+# from test_modules.intro import make_pie, image, get_html, make_weight_chart
+import modules.helpers as helpers
+import modules.HistoricalData as hst
+from test_modules.tab4 import make_chart
+import modules.MCTab as MCTab
+import modules.intro as intro
 
 
 # In[2]:
@@ -42,7 +48,7 @@ import tab0
 
 # initialize the dashboard framework
 
-bootstrap = BootstrapTemplate(title="Portfolio Analysis", header_background = 'blue')
+template = FastListTemplate(title="Portfolio Selection Tool", header_background = 'blue')
 
 
 # In[3]:
@@ -187,7 +193,7 @@ spacer = pn.layout.Spacer(margin=10)
 
 
 # assembling the sidebar
-bootstrap.sidebar.append(pn.Row(pn.Column(header_box,
+template.sidebar.append(pn.Row(pn.Column(header_box,
                                           spacer,
                                           spacer,
                                           questions_dict[1],q1,
@@ -224,21 +230,21 @@ def get_values():
 
 
 
-def make_chart2(investment, weights, stocks):
-    weights = weights['weight']
-    allocation = [w * investment for w in weights]
-    amount = allocation/stocks.iloc[0]
-    stock_value = stocks * amount
-    stock_value = stock_value.sum(axis=1).reset_index().rename(columns={0:"Total Value ($)"}).set_index('Date')
-    plot_title = "title"
-    fig0 = Figure(figsize=(16,8))
-    ax0 = fig0.subplots()
-    # FigureCanvas(fig0)  # not needed for mpl >= 3.1
-    chart = ax0.plot(stock_value['Total Value ($)'])
+# def make_chart2(investment, weights, stocks):
+#     weights = weights['weight']
+#     allocation = [w * investment for w in weights]
+#     amount = allocation/stocks.iloc[0]
+#     stock_value = stocks * amount
+#     stock_value = stock_value.sum(axis=1).reset_index().rename(columns={0:"Total Value ($)"}).set_index('Date')
+#     plot_title = "title"
+#     fig0 = Figure(figsize=(16,8))
+#     ax0 = fig0.subplots()
+#     # FigureCanvas(fig0)  # not needed for mpl >= 3.1
+#     chart = ax0.plot(stock_value['Total Value ($)'])
 
-    ax0.set_title(plot_title)
-   # plot = stock_value.hvplot.line(x="Date", height=500,width=1000)
-    return fig0
+#     ax0.set_title(plot_title)
+#    # plot = stock_value.hvplot.line(x="Date", height=500,width=1000)
+#     return fig0
 
 
 
@@ -258,16 +264,21 @@ def make_chart2(investment, weights, stocks):
 # In[11]:
 
 
-helpers.get_weights()
+a,b,c,d,e,f = get_values()
+tickers = helpers.get_tickers(helpers.get_score(a,b,c,d,e,f))
+stocks = helpers.get_stocks(tickers)
+weights = helpers.get_weights(helpers.get_score(a,b,c,d,e,f))
+market = helpers.get_stocks(['^GSPC'])
 
 
-# In[12]:
+# In[ ]:
 
 
-make_weight_chart()
+stock, market = helpers.get_adjclose(stocks,market)
 
 
-# In[17]:
+
+# In[ ]:
 
 
 # defining the contents of the main (right-hand) pane in the Panel dashboard
@@ -278,134 +289,150 @@ def main_display(_):
     
     # setting variables for use in defining dashboard components
     a,b,c,d,e,f = get_values()
-    stocks = helpers.get_stocks()
-    weights = helpers.get_weights()
+    tickers = helpers.get_tickers(helpers.get_score(a,b,c,d,e,f))
+    stocks = helpers.get_stocks(tickers)
+    weights = helpers.get_weights(helpers.get_score(a,b,c,d,e,f))
+    market = helpers.get_stocks(['^GSPC'])
+    # determing the text to display describing portfolio based upon risk analsys survey  
+    port_desc_text = helpers.get_descr(a,b,c,d,e,f)
+    port_class_text = helpers.get_risk(a,b,c,d,e,f)
+    score = helpers.get_score(a,b,c,d,e,f)
     
+    # prepare cumulative return information for use in displays
+    df_port_cum_returns, df_market_cum_returns, portfolio_returns, market_daily_returns = hst.get_cum_returns(stocks, market, weights)
 
+    
 ##########
-    # defining contents of tab 0
-    
+    # Setting up Introduction tab
+ 
 
     
-    intro_text = tab0.get_intro()
-    disclaimer_text = tab0.get_disclaimer()
+    intro_text = intro.get_intro()
+   # disclaimer_text = tab0.get_disclaimer()
     
     intro_pane = pn.pane.HTML(intro_text)
-    disclaimer_pane = pn.pane.HTML(disclaimer_text)
+    #disclaimer_pane = pn.pane.HTML(disclaimer_text)
     
-
-##########
-    # defining contents for 'tab 1'  
-    # calling image function from outer script to determine which photo to display based upon survey responses    
-    photo = image(a,b,c,d,e,f)
+#########
+    # defining contents for 'Portfolio Profile' pane
     
-    p = make_pie()
+    #port_stats = hst.get_stats(df_port_cum_returns, portfolio_returns)
+    
+    # creating pie chart and table to visualize portfolio distribution
+    p = hst.make_pie(weights)
+    weight_chart = hst.make_weight_chart(weights)
+    
+    # define pane to provide risk score and portfolio description
+    port_desc_pane = pn.pane.HTML(f"""<h3> Based upon your Risk Tolerance Score of {score} you are classified as a {port_class_text.capitalize()} Investor. 
+    <br><br>{port_desc_text} </h3>""",
+                                  width=800)
+    
+    # define panes for inclusion in tab
     bokeh_pane = pn.pane.Bokeh(p, theme="dark_minimal")
-    
-    df_pane = pn.pane.DataFrame(make_weight_chart(), width=400)
-    text_pane = pn.pane.HTML(get_html())
-    
+    df_weights_pane = pn.pane.DataFrame(weight_chart, width=200)
     
 
 ##########
-    # defining contents of 'tab 2'
-    
-    # calling risk() function from main script to obtain statement regarding risk category
-    text=risk(a,b,c,d,e,f)
-    
-    # defining contents of HTML pane to be display
-    html_pane = pn.pane.HTML("""
-    <h1>This is an HTML pane</h1>
-    
-    <br>
-    <h2>{}</h2>
-
-      
-
-    <br>
-    <h2>We can include a diagram (pie chart) showing portfolio breakdown.
-    <br>
-    i.e. x% fixed income, y% international equity/stocks, z% US equity/stocks, w% crytpo/etc <h2>
-
-    """.format(text), style={'background-color': '#F6F6F6', 'border': '2px solid black',
-                'border-radius': '5px', 'padding': '10px'},sizing_mode='stretch_width')
-    
-##########
-    
-    # defining contents of 'tab 3'
-    # 
-    # define initial image to display. image will be updated when button is clicked
-    jpg_pane = pn.pane.JPG('https://www.gstatic.com/webp/gallery/4.sm.jpg', width=500)
-    
-    # define button to be clicked to change image
-    second_button = pn.widgets.Button(name='Click me!')
-    
-    # define textbox that will display the number of times the button has been clicked
-    textb = pn.widgets.TextInput(value="Button has not been clicked yet")
-    
-    # define function that will switch images when button is clicked
-    async def button2(event):
-        if (second_button.clicks % 2) != 0:
-            jpg_pane.object = "image1.jpg"
-        else:
-            jpg_pane.object = 'https://www.gstatic.com/webp/gallery/4.sm.jpg'
-        textb.value = "Button has been clicked {0} times".format(second_button.clicks)
-
-    # watch/listen for button clicks
-    second_button.on_click(button2)
+    # defining contents for 'Past Performance' tab  
     
     
+ 
     
-##########
-
-    # defining contents of 'tab 4'
+    # prepare cumulative return information for use in 
+    #df_port_cum_returns, df_market_cum_returns, portfolio_returns, market_daily_returns = hst.get_cum_returns(stocks, market, weights)
     
-    # setup widget to allow user to alter initial investment amount
-    # will cause cumulative return graph to be updated
-    investment_amount = pn.widgets.Spinner(value=5000, step=500, start=1000, end=100000)
+    #create portfolio vs market chart, portfolio box plot and basic statistics dataframe along with the page intro text
+    compare_chart = hst.make_comparison_chart(df_port_cum_returns, df_market_cum_returns, port_class_text)
+    spread_plot = hst.make_spread_plot(df_port_cum_returns)
+    port_stats = hst.get_stats(df_port_cum_returns, portfolio_returns)
+    header_text = hst.get_past_performance_intro(port_class_text)
+    footer_text = hst.get_past_performance_footer()
     
 
     
+    # # creating pie chart and table to visualize portfolio distribution
+    # p = hst.make_pie(weights)
+    # weight_chart = hst.make_weight_chart(weights)
+    
+    
+    
+    
+    # defiing panes for display
+    
+    # beta_plot_pane = pn.pane.Matplotlib(beta_plot)
+    compare_pane = pn.pane.Matplotlib(compare_chart)
+    spread_pane = pn.pane.Matplotlib(spread_plot)
+    stats_pane = pn.pane.DataFrame(port_stats, width=200)
+    header_pane = pn.pane.HTML(header_text, width = 900)
+    footer_pane = pn.pane.HTML(footer_text, width = 900)
+    # port_desc_pane = pn.pane.HTML(f"""<h3> Based upon your Risk Tolerance Score of {score} you are classified as a {port_class_text.capitalize()} Investor. 
+    # <br><br>{port_desc_text} </h3>""",
+    #                               width=800)
 
 
-    # create dynamic object that will display the cumulative return.
-    # will be updated as investment amount is changed
-    # graph is created using make_chart() function from outer script
-    # chart = pn.bind(make_chart,investment_amount,weights,stocks)
-    chart = pn.bind(make_chart,investment_amount, weights, stocks)
+#     bokeh_pane = pn.pane.Bokeh(p, theme="dark_minimal")
+    
+#     df_pane = pn.pane.DataFrame(weight_chart, width=200)
+    
+    
+    # text_pane = pn.pane.HTML(get_html())
+    
+    # tab1_grid = pn.GridSpec()
+    # tab1_grid[0,0] = bokeh_pane
+    # tab1_grid[0,1] = df_pane
+    
+    
 
 
     
     
 ##########
-    # defining contents of 'tab 5'
+    # defining contents of 'Monte Carlo Simulation' tab
     
     # call function to run MC simulation and return plots and statistics
     
-    mc_text = tab5.get_text()
-    mc_text_pane = pn.pane.HTML(mc_text)
-    mc_button = pn.widgets.Button(name="Show MC Simulation Results")
-    text_holder = pn.widgets.TextInput(value="")
-    tab5_column = pn.Column(mc_text_pane, mc_button, spacer,text_holder, spacer)
+    # tab5_grid = pn.GridSpec(width=800,height=600)
+    
+    
+    mc_text = MCTab.get_text()
+    mc_text_pane = pn.pane.HTML(mc_text, width = 800)
+    mc_button = pn.widgets.Button(name="Show Monte Carlo Simulation Results")
+
+    # tab5_column = pn.Column(mc_text_pane, mc_button, spacer, spacer)
+    
+    mc_column = pn.Column(spacer)
+    mc_row1 = pn.Row(spacer)
+    mc_row2 = pn.Row(spacer)
+    mc_footer = pn.pane.HTML(MCTab.get_mc_footer(), width = 800)
+    
+       
    
+    # tab5_grid[0,:] = mc_text_pane
+    # tab5_grid[1,:] = mc_column
     
     async def change_pane(event):
-        new_text = "new new new"
-        neat = "neat neat"
+
         if (mc_button.clicks == 1):
-            text_holder.value = "One moment please and your simulation data will be displayed..."
-            simulation_plot, distribution_plot = tab5.prep_MC_data()
+
+            simulation_plot, distribution_plot, summary, text = MCTab.prep_MC_data(stocks, weights)
 
             distribution_pane = pn.pane.Matplotlib(distribution_plot, dpi=144)
-            tab5_column.append(simulation_plot)
-            tab5_column.append(distribution_pane)
+            summary_pane = pn.pane.DataFrame(summary.to_frame(name='statistics'))
+            ci_pane = pn.pane.HTML(f"""<h4> {text} </h4>""", width = 800)
             
-    async def change_text(event):
-      
-        if (mc_button.clicks == 1):
-            text_holder.value = "One moment please and your simulation data will be displayed..."
+                                             
+            # tab5_column.append(simulation_plot)
+            # tab5_column.append(distribution_pane)
+            mc_column.append(simulation_plot)
+            mc_column.append(distribution_pane)
+            # mc_row2.append(summary_pane)
+            mc_row2.append(pn.layout.Spacer(margin=10))
+            mc_row2.append(pn.layout.Spacer(margin=10))
+            mc_row2.append(ci_pane)
+            
+
              
-    mc_button.on_click(change_text)
+
     mc_button.on_click(change_pane)
 
     
@@ -415,32 +442,55 @@ def main_display(_):
     
 
     # combine main pane components into a tabbed structure and return to main script for usage
-    return pn.Tabs(("Tab 0", pn.Row(pn.Column(intro_pane, width=800),pn.Column(disclaimer_pane), sizing_mode='stretch_width')),
-                   ("Tab 1", pn.Column("This tab can hold a variety of plots or details about the portfolio selected",photo,spacer,text_pane, df_pane,spacer, bokeh_pane)),
-                   ("Tab 2", pn.Row(pn.Column("This tab can hold even more plots or details!!", pn.pane.markup.Markdown(text)),html_pane)),
-                   ("Tab 3", pn.Row(pn.Column(jpg_pane,second_button,textb ),"Who Knows?")),
-                   ("Tab 4", pn.Column(pn.Row(investment_amount),chart,sizing_mode="stretch_width")),
-                   ("Tab 5", pn.Column(tab5_column))
-                  )
+#     return pn.Tabs(("Introduction", pn.Column(intro_pane, sizing_mode='stretch_width')),
+#                    ("Tab 1", pn.Column("This tab can hold a variety of plots or details about the portfolio selected",photo,spacer,text_pane, pn.Row(df_pane,spacer, bokeh_pane))),
+#                    ("Tab 2", pn.Row(pn.Column("This tab can hold even more plots or details!!", pn.pane.markup.Markdown(text)),html_pane)),
+#                    ("Tab 3", pn.Row(pn.Column(jpg_pane,second_button,textb ),"Who Knows?")),
+#                    ("Tab 4", pn.Column(pn.Row(investment_amount),chart,sizing_mode="stretch_width")),
+#                    ("Tab 5", pn.Row(tab5_grid, width=800))
+#                     )
+                  
  
-   
+    return pn.Tabs(("Introduction", pn.Column(intro_pane, sizing_mode='stretch_width')),
+                   ("Portfolio Profile", pn.Column(pn.Row(port_desc_pane),
+                                                   pn.Row(bokeh_pane, df_weights_pane))),
+                   ("Past Performance", pn.Column(pn.Row(header_pane),
+                                                  pn.Row(compare_pane),
+                                                  pn.Row(spread_pane),
+                                                  pn.Row(stats_pane, width=50),
+                                                  pn.Row(spacer),
+                                                 pn.Row(footer_pane))),
+                   ("Monte Carlo Simulation", pn.Column(pn.Row(mc_text_pane),
+                                                        pn.Row(mc_button),
+                                                        pn.Row(mc_column), 
+                                                        pn.Row(mc_row2),
+                                                       pn.Row(mc_footer)))
+                   
+                
+                  )
+#                    ("Tab 1", pn.Column("This tab can hold a variety of plots or details about the portfolio selected",photo,spacer,text_pane, pn.Row(df_pane,spacer, bokeh_pane))),
+#                    ("Tab 2", pn.Row(pn.Column("This tab can hold even more plots or details!!", pn.pane.markup.Markdown(text)),html_pane)),
+#                    ("Tab 3", pn.Row(pn.Column(jpg_pane,second_button,textb ),"Who Knows?")),
+#                    ("Tab 4", pn.Column(pn.Row(investment_amount),chart,sizing_mode="stretch_width")),
+#                    ("Tab 5", pn.Row(tab5_grid, width=800))
+#                     )
 
 
-# In[18]:
+# In[ ]:
 
 
 #adding main display area to dashboard
 
-bootstrap.main.append(main_display)
+template.main.append(main_display)
 
 
-# In[19]:
+# In[ ]:
 
 
 # displaying dashboard
 # if dashboard is being served through a servise this needs to be updated to .servicable() rather than .show()
 
-bootstrap.show()
+template.show()
 
 
 # In[ ]:

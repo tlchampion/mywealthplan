@@ -1,0 +1,16 @@
+name: proj1
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.9
+  - panel
+  - bokeh
+  - pandas
+  - yfinance
+  - numpy
+  - matplotlib
+  - hvplot
+  - python-dotenv
+  - jupyterlab
+prefix: /Users/thomas/opt/anaconda3/envs/proj1
