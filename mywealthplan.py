@@ -1,4 +1,6 @@
 
+
+
 # import modules
 import panel as pn
 pn.extension('tabulator')
@@ -11,7 +13,6 @@ import datetime
 from matplotlib.figure import Figure
 from matplotlib import cm
 
-
 # import modules that help build tabs
 import modules.helpers as helpers
 import modules.HistoricalData as hst
@@ -19,11 +20,15 @@ import modules.MCTab as MCTab
 import modules.intro as intro
 import modules.profile as prf
 
+from modules.MCForecastTools import MCSimulation
+import create_data_file as cdf
 
 
+
+
+# initialize the dashboard framework
 
 template = FastListTemplate(title="MyWealthPath", header_background = 'blue')
-
 
 
 
@@ -39,7 +44,6 @@ questions_dict = helpers.get_questions()
 # defining the valid answers to the questions and assigninig points to each answer
 
 answers_dict = helpers.get_answers()
-
 
 
 
@@ -138,135 +142,167 @@ def main_display(_):
     # prepare cumulative return information for use in displays
     df_port_cum_returns, df_market_cum_returns, portfolio_returns, market_daily_returns = hst.get_cum_returns(stocks, market, weights)
 
-    
+    # if the survey has been submitted the full set of tabs will be shown
+    if button.clicks > 0:
 ##########
 
 
-# Setting up Introduction tab
-# grabbing contents from modules/intro.py file and assembling into panel panes
-    intro_text = intro.get_intro()
-    portfolios_intro_text = intro.get_portfolios_intro()
-    disclaimer_text = intro.get_disclaimer()
-    intro_pane = pn.pane.Markdown(intro_text)
-    tabs_pane = pn.pane.PNG("https://drive.google.com/uc?id=1RuqJmAkdxuNSkFoDk4OB6Qi_JIsGgLlD", width=400)
-    portfolios_intro_pane = pn.pane.Markdown(portfolios_intro_text)
-    portfolios_pane = pn.pane.PNG("https://drive.google.com/uc?id=1lr_nc7ayQNyIvSJll5E61f4cZZPokKlK", width=1000)
-    disclaimer_pane = pn.pane.Markdown(disclaimer_text)
+    # Setting up Introduction tab
+    # grabbing contents from modules/intro.py file and assembling into panel panes
+        intro_text = intro.get_intro()
+        portfolios_intro_text = intro.get_portfolios_intro()
+        disclaimer_text = intro.get_disclaimer()
+        intro_pane = pn.pane.Markdown(intro_text)
+        tabs_pane = pn.pane.PNG("https://drive.google.com/uc?id=1RuqJmAkdxuNSkFoDk4OB6Qi_JIsGgLlD", width=400)
+        portfolios_intro_pane = pn.pane.Markdown(portfolios_intro_text)
+        portfolios_pane = pn.pane.PNG("https://drive.google.com/uc?id=1lr_nc7ayQNyIvSJll5E61f4cZZPokKlK", width=1000)
+        disclaimer_pane = pn.pane.Markdown(disclaimer_text)
 
 
 
-    
-#########
-    # defining contents for 'Portfolio Profile' pane
-    
 
-    
-    # creating pie chart and table to visualize portfolio distribution
-    p = prf.make_pie(weights)
-    weight_chart = prf.make_weight_chart(weights)
-    
-    # define pane to provide risk score and portfolio description
-    port_desc_pane = pn.pane.HTML(f"""<h3> Based upon your Risk Tolerance Score of {score} you are classified as a {port_class_text.capitalize()} Investor. 
-    <br><br>{port_desc_text} </h3>""",
-                                  width=800)
-    
-    # define panes for inclusion in tab
-    bokeh_pane = pn.pane.Bokeh(p, theme="dark_minimal")
-    df_weights_pane = pn.pane.DataFrame(weight_chart, width=200)
-    
-
-##########
-    # defining contents for 'Past Performance' tab  
-    
-    
-    #create portfolio vs market chart, portfolio box plot and basic statistics dataframe along with the page intro text
-    compare_chart = hst.make_comparison_chart(df_port_cum_returns, df_market_cum_returns, port_class_text)
-    spread_plot = hst.make_spread_plot(df_port_cum_returns)
-    port_stats = hst.get_stats(df_port_cum_returns, portfolio_returns)
-    header_text = hst.get_past_performance_intro(port_class_text)
-    footer_text = hst.get_past_performance_footer()
-
-    
-    # defiing panes for display
-    
-    compare_pane = pn.pane.Matplotlib(compare_chart)
-    spread_pane = pn.pane.Matplotlib(spread_plot)
-    stats_pane = pn.pane.DataFrame(port_stats, width=200)
-    header_pane = pn.pane.HTML(header_text, width = 900)
-    footer_pane = pn.pane.HTML(footer_text, width = 900)
-
-    
+    #########
+        # defining contents for 'Portfolio Profile' pane
 
 
-    
-    
-##########
-    # defining contents of 'Monte Carlo Simulation' tab
-    
-    # grab text to display in pane, define panel pane to hold text and setup button to launch MC simulation
-    mc_text = MCTab.get_text()
-    mc_text_pane = pn.pane.HTML(mc_text, width = 800)
-    mc_button = pn.widgets.Button(name="Show Monte Carlo Simulation Results")
 
-    # setup partial layout framework for tab. results of MC simulation will be appened to these panel objects for display
-    
-    mc_column = pn.Column(spacer)
-    mc_row1 = pn.Row(spacer)
-    mc_row2 = pn.Row(spacer)
-    mc_footer = pn.pane.HTML(MCTab.get_mc_footer(), width = 800)
-    
-       
-    # this function is triggered once the button to perform a MC simulation is clicked. 
-    # Initiates simulation and recives plots and statistics for display
-    async def change_pane(event):
+        # creating pie chart and table to visualize portfolio distribution
+        p = prf.make_pie(weights)
+        weight_chart = prf.make_weight_chart(weights)
 
-        if (mc_button.clicks == 1):
+        # define pane to provide risk score and portfolio description
+        port_desc_pane = pn.pane.HTML(f"""<h3> Based upon your Risk Tolerance Score of {score} you are classified as a {port_class_text.capitalize()} Investor. 
+        <br><br>{port_desc_text} </h3>""",
+                                      width=800)
 
-            simulation_plot, distribution_plot, summary, text = MCTab.prep_MC_data(stocks, weights)
+        # define panes for inclusion in tab
+        bokeh_pane = pn.pane.Bokeh(p, theme="dark_minimal")
+        df_weights_pane = pn.pane.DataFrame(weight_chart, width=200)
 
-            distribution_pane = pn.pane.Matplotlib(distribution_plot, dpi=144)
-            summary_pane = pn.pane.DataFrame(summary.to_frame(name='statistics'))
-            ci_pane = pn.pane.HTML(f"""<h4> {text} </h4>""", width = 800)
-            
-                                             
-            # tab5_column.append(simulation_plot)
-            # tab5_column.append(distribution_pane)
-            mc_column.append(simulation_plot)
-            mc_column.append(distribution_pane)
-            # mc_row2.append(summary_pane)
-            mc_row2.append(pn.layout.Spacer(margin=10))
-            mc_row2.append(pn.layout.Spacer(margin=10))
-            mc_row2.append(ci_pane)
-            
 
-    # listener for button click    
+    ##########
+        # defining contents for 'Past Performance' tab  
 
-    mc_button.on_click(change_pane)
 
-    #######
-    
-    # returning panel components defined above to main script for appending to dashboard
-    # components are organized into serperate tabs
-    # each tab is organized using panels Column and Row functionality
-                 
- 
-    return pn.Tabs(("Introduction", pn.Column(intro_pane, portfolios_intro_pane, portfolios_pane, disclaimer_pane)),
-                   ("Portfolio Profile", pn.Column(pn.Row(port_desc_pane),
-                                                   pn.Row(bokeh_pane, df_weights_pane))),
-                   ("Past Performance", pn.Column(pn.Row(header_pane),
-                                                  pn.Row(compare_pane),
-                                                  pn.Row(spread_pane),
-                                                  pn.Row(stats_pane, width=50),
-                                                  pn.Row(spacer),
-                                                 pn.Row(footer_pane))),
-                   ("Future Performance", pn.Column(pn.Row(mc_text_pane),
-                                                        pn.Row(mc_button),
-                                                        pn.Row(mc_column), 
-                                                        pn.Row(mc_row2),
-                                                       pn.Row(mc_footer)))
+        #create portfolio vs market chart, portfolio box plot and basic statistics dataframe along with the page intro text
+        compare_chart = hst.make_comparison_chart(df_port_cum_returns, df_market_cum_returns, port_class_text)
+        spread_plot = hst.make_spread_plot(df_port_cum_returns)
+        port_stats = hst.get_stats(df_port_cum_returns, portfolio_returns)
+        header_text = hst.get_past_performance_intro(port_class_text)
+        footer_text = hst.get_past_performance_footer()
+
+
+        # defiing panes for display
+
+        compare_pane = pn.pane.Matplotlib(compare_chart)
+        spread_pane = pn.pane.Matplotlib(spread_plot)
+        stats_pane = pn.pane.DataFrame(port_stats, width=200)
+        header_pane = pn.pane.HTML(header_text, width = 900)
+        footer_pane = pn.pane.HTML(footer_text, width = 900)
+
+
+
+
+
+
+    ##########
+        # defining contents of 'Monte Carlo Simulation' tab
+
+        # grab text to display in pane, define panel pane to hold text and setup button to launch MC simulation
+        mc_text = MCTab.get_text()
+        mc_text_pane = pn.pane.HTML(mc_text, width = 800)
+        mc_button = pn.widgets.Button(name="Show Monte Carlo Simulation Results")
+
+        # setup partial layout framework for tab. results of MC simulation will be appened to these panel objects for display
+
+        mc_column = pn.Column(spacer)
+        mc_row1 = pn.Row(spacer)
+        mc_row5 = pn.Row(spacer)
+        mc_row10 = pn.Row(spacer)
+        mc_row15 = pn.Row(spacer)
+        mc_row20 = pn.Row(spacer)
+        mc_row25 = pn.Row(spacer)
+        mc_footer = pn.pane.HTML(MCTab.get_mc_footer(), width = 800)
+
+
+        # this function is triggered once the button to perform a MC simulation is clicked. 
+        # Initiates simulation plots and statistics for display
+        async def change_pane(event):
+
+            if (mc_button.clicks == 1):
+
+
+                    datasets = helpers.get_data_files(port_class_text)
+                    results = []
+                    for df in list(datasets.keys()):
+              
+                        result = MCTab.prep_MC_data(datasets[df])
+                        results.append(result)
+
                    
-                
-                  )
+                    mc_row5.append(results[0][0])
+                    mc_row10.append(results[1][0])
+                    mc_row15.append(results[2][0])
+                    mc_row20.append(results[3][0])
+                    mc_row25.append(results[4][0])
+                    mc_row5.append(results[0][2])
+                    mc_row10.append(results[1][2])
+                    mc_row15.append(results[2][2])
+                    mc_row20.append(results[3][2])
+                    mc_row25.append(results[4][2])
+                               
+    
+
+        # listener for button click    
+
+        mc_button.on_click(change_pane)
+
+        #######
+
+        # returning panel components defined above to main script for appending to dashboard
+        # components are organized into serperate tabs
+        # each tab is organized using panels Column and Row functionality
+
+
+        return pn.Tabs(("Introduction", pn.Column(intro_pane, portfolios_intro_pane, portfolios_pane, disclaimer_pane)),
+                       ("Portfolio Profile", pn.Column(pn.Row(port_desc_pane),
+                                                       pn.Row(bokeh_pane, df_weights_pane))),
+                       ("Past Performance", pn.Column(pn.Row(header_pane),
+                                                      pn.Row(compare_pane),
+                                                      pn.Row(spread_pane),
+                                                      pn.Row(stats_pane, width=50),
+                                                      pn.Row(spacer),
+                                                     pn.Row(footer_pane))),
+                       ("Future Performance", pn.Column(pn.Row(mc_text_pane),
+                                                            pn.Row(mc_button),
+                                                            pn.Row(mc_column), 
+                                                            pn.Row(mc_row5),
+                                                            pn.Row(mc_row10),
+                                                            pn.Row(mc_row15),
+                                                            pn.Row(mc_row20),
+                                                            pn.Row(mc_row25),
+                                                            pn.Row(spacer),
+                                                            pn.Row(spacer),
+                                                           pn.Row(mc_footer)))
+
+
+                      )
+    
+    else:
+        # if survey has not been submitted only the introduction tab is shown
+
+         # Setting up Introduction tab
+        # grabbing contents from modules/intro.py file and assembling into panel panes
+        intro_text = intro.get_intro()
+        portfolios_intro_text = intro.get_portfolios_intro()
+        disclaimer_text = intro.get_disclaimer()
+        intro_pane = pn.pane.Markdown(intro_text)
+        tabs_pane = pn.pane.PNG("https://drive.google.com/uc?id=1RuqJmAkdxuNSkFoDk4OB6Qi_JIsGgLlD", width=400)
+        portfolios_intro_pane = pn.pane.Markdown(portfolios_intro_text)
+        portfolios_pane = pn.pane.PNG("https://drive.google.com/uc?id=1lr_nc7ayQNyIvSJll5E61f4cZZPokKlK", width=1000)
+        disclaimer_pane = pn.pane.Markdown(disclaimer_text)
+        
+        return pn.Tabs(("Introduction", pn.Column(intro_pane, portfolios_intro_pane, portfolios_pane, disclaimer_pane)))
 
 
 

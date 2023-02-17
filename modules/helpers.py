@@ -85,6 +85,18 @@ def get_questions():
 def get_answers():
     return answers_dict
 
+def get_port_assets(port):
+    if port == 'conservative':
+        return conservative
+    elif port == 'balanced':
+        return balanced
+    elif port == 'growth':
+        return growth
+    elif port == 'aggressive':
+        return aggressive
+    else:
+        return alternative
+    
 
 # functions to load in weights and category for the assets in a portfolio
 
@@ -195,3 +207,13 @@ def get_adjclose(stocks, market):
 
     return stock_adjclose, market_adjclose
 
+# function to load the 5 datasets for the selected portfolio
+# returns a dictionary containg the datasets
+# used to create display elements for the Monte Carlo simulation tab ("Future Performance")
+def get_data_files(port):
+    data_5= pd.read_csv(f"./data/{port}_5.csv")
+    data_10= pd.read_csv(f"./data/{port}_10.csv")
+    data_15= pd.read_csv(f"./data/{port}_15.csv")
+    data_20= pd.read_csv(f"./data/{port}_20.csv")
+    data_25= pd.read_csv(f"./data/{port}_25.csv")
+    return {5 : data_5, 10: data_10, 15: data_15, 20: data_20, 25: data_25}

@@ -48,6 +48,15 @@ If you prefer using pip, the included requirements.txt file may be used to insta
 pip install -r requirements.txt
 ```
 
+## Updating Data
+
+Since the 5 portfolios currently have a fixed asses composition the data for the Monte Carlo simulations is prepared in advance and stored as csv files in the 'data' directory. The included create_data_file.py script should be run periodically to update the csv files with data related to recent performance. The script will prepare 25 total csv files: 5 year, 10 year, 15 year, 20 year and 25 year Monte Carlo simulations for each of the 5 portfolios.
+
+The script may be run from the command line and no arguments are taken:
+```
+python create_data_file.py
+```
+
 ## Launching
 
 The Portfolio Selection Tool can be run from the jupyter notebook or by using the included python script. In either case, once launched a [Panel](https://panel.holoviz.org/index.html) dashboard will be displayed.
