@@ -24,6 +24,8 @@ The [Pandas](https://pandas.pydata.org) and [Numpy](https://numpy.org) libraries
 
 ## Installation Guide
 
+### Environment Preperation
+
 The contents of the repository should be placed into the desired folder on the users computer, being sure to maintain the directory structure. 
 
 The following python packages must be installed to run the application locally:
@@ -48,14 +50,18 @@ If you prefer using pip, the included requirements.txt file may be used to insta
 pip install -r requirements.txt
 ```
 
-## Updating Data
-
-Since the 5 portfolios currently have a fixed asses composition the data for the Monte Carlo simulations is prepared in advance and stored as csv files in the 'data' directory. The included create_data_file.py script should be run periodically to update the csv files with data related to recent performance. The script will prepare 25 total csv files: 5 year, 10 year, 15 year, 20 year and 25 year Monte Carlo simulations for each of the 5 portfolios.
+### Create csv Files
+Once you have extracted all files to your desired directory you will need to run the included create_data_file.py script in order to create the csv files used during the Monte Carlo simulations. Since the 5 portfolios currently have a fixed asses composition the data for the Monte Carlo simulations is prepared in advance and stored as csv files in the 'data' directory. The script will prepare 25 total csv files: 5 year, 10 year, 15 year, 20 year and 25 year Monte Carlo simulations for each of the 5 portfolios.
 
 The script may be run from the command line and no arguments are taken:
 ```
 python create_data_file.py
 ```
+
+### Updating Data
+
+You may rerun the create_data_file.py script from time to time to include the most up-to-date market information for the portfolios in order to ensure the Monte Carlo simulations are using relevant data.
+
 
 ## Launching
 
