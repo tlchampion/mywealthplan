@@ -1,11 +1,12 @@
+# This script will create the required csv files for the Monte Carlo simulations. It must be run once before running the portfolio selection tool and should be rerun on a periodic basis to update the data with current information.
+
 import modules.helpers as helpers
 import pandas as pd
 import numpy as np
 import datetime as dt
 import warnings
 warnings.filterwarnings(action='ignore')
-import sys
-import argparse
+
 
 
 
@@ -87,6 +88,7 @@ if __name__ == "__main__":
     
 
     num_simulations = 2500
+    year = 25
     
         
 
@@ -94,17 +96,16 @@ if __name__ == "__main__":
     portfolios = ['conservative', 'balanced', 'growth', 'aggressive', 'alternative']
     
     for port in portfolios:
-        years = [5,10,15,20,25]
-        for year in years:
-            
-            assets = helpers.get_port_assets(port)
-            ticker_data = helpers.get_stocks(assets)
-            weights_df = pd.DataFrame.from_dict(assets, orient='index', columns=['weight', 'category'])
-            weights = weights_df['weight'].to_list()
-            data = create_mc_data_file(ticker_data, weights, num_simulations, year)
 
-            data.to_csv(f"./data/{port}_{year}.csv", index=False)
-            print(f"{port} for {year} years is done")
+            
+        assets = helpers.get_port_assets(port)
+        ticker_data = helpers.get_stocks(assets)
+        weights_df = pd.DataFrame.from_dict(assets, orient='index', columns=['weight', 'category'])
+        weights = weights_df['weight'].to_list()
+        data = create_mc_data_file(ticker_data, weights, num_simulations, year)
+
+        data.to_csv(f"./data/{port}_{year}.csv", index=False)
+        print(f"{port} for {year} years is done")
     
 
 

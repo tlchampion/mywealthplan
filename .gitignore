@@ -6,6 +6,12 @@ Pipfile.lock
 .env
 
 
+data/aggressive_25.csv
+data/alternative_25.csv
+data/balanced_25.csv
+data/conservative_25.csv
+data/growth_25.csv
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

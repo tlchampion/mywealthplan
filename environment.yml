@@ -12,6 +12,9 @@ dependencies:
   - matplotlib
   - bokeh
   - jupyterlab
+  - awswrangler
+  - boto3
+  - python-dotenv
   - pip:
       - appdirs==1.4.4
       - bs4==0.0.1
