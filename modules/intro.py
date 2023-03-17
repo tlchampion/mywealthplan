@@ -44,7 +44,7 @@ Seek a duly licensed professional for investment advice.
     
     ----
     
-    © 2023 MyWealthPath.
+    © 2023 MyWealthPlan
     
     """
     

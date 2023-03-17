@@ -62,6 +62,7 @@ python create_data_file.py
 
 You may rerun the create_data_file.py script from time to time to include the most up-to-date market information for the portfolios in order to ensure the Monte Carlo simulations are using relevant data.
 
+---
 
 ## Launching
 
@@ -113,11 +114,24 @@ Finally, on the last tab, a 10 years Monte Carlo Simulation can be launched in o
 
 ## Contributors
 
+An initial version of the MyWealthPlan Portfolio Selection Tool was developed to fulfill a project requirement for the UC Berkeley Extension FinTech bootcamp. The original contributors were:
+
 [Ahmad Takatkah](https://github.com/vcpreneur)  
 [Lourdes Dominguez Begoa](https://github.com/LourdesDB)  
 [Patricio Gomez](https://github.com/patogogo)  
 [Lovedeep Singh](https://github.com/LovedeepSingh89)  
 [Thomas L. Champion](https://github.com/tlchampion)  
+
+A GitHub repo for the original code can be found [here](https://github.com/tlchampion/personal_financial_advisor)
+
+
+---
+
+## Live App
+
+A copy of this application has been pushed to Heroku and can be viewed [here](mwpapp.herokuapp.com)
+
+Please be aware that the app is set to sleep if not accessed within 30 minutes. As such, there may be a short delay as the app wakes up.
 
 ---
 
@@ -126,11 +140,13 @@ Finally, on the last tab, a 10 years Monte Carlo Simulation can be launched in o
 License information can be found in the included LICENSE file.
 
 ---
+
 ## Credits
 * Risk Analysis Survey was compiled based upon a survey provided by [Lincoln Financial Group](https://bit.ly/3InwBMP)
 * Code for generating the Monte Carlo Simulation was modified from code provided by UC Berkeley Extension FinTech Bootcamp
 
 ___
+
 ## Future Work
 
 Future work and/or enhancements to this project include:
